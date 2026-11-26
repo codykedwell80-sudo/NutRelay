@@ -13,7 +13,7 @@ python3 app.py
 python3 test_engine.py
 ```
 
-Choose a scenario, edit the budget and payment list, and run the simulator. Import the included `testnut-public-keys.json` to use a public Cashu test mint snapshot instead of synthetic settings. Or import a public NUT-01 /v1/keys response from a mint of your choice. Only public JSON is accepted; never paste a wallet seed, secret or token.
+Choose a scenario, edit the budget and payment list, and run the simulator. Select PLAY BLACKOUT for a payment-by-payment comparison with playback controls, or DENOMINATION LAB to inspect proof counts and face-value allocations interactively. Import the included `testnut-public-keys.json` to use a public Cashu test mint snapshot instead of synthetic settings. Or import a public NUT-01 /v1/keys response from a mint of your choice. Only public JSON is accepted; never paste a wallet seed, secret or token.
 
 ## How it works
 
@@ -32,7 +32,7 @@ This is a planner, not a wallet. No ecash is minted, transferred, received or sp
 
 ## Evidence
 
-Tested on Arch Linux with Python/Tk. Nine automated tests including 150 random small exact-change cases compared against exhaustive enumeration, conservation, no proof reuse, keyset tamper detection, v1 compatibility, expiry and fee rounding. Desktop GUI smoke test passed. Public test-mint keyset snapshot fetched November 27, 2026; the active sat v2 ID matched its data. No real money was used.
+Tested on Arch Linux with Python/Tk. Nine automated tests including 150 random small exact-change cases compared against exhaustive enumeration, conservation, no proof reuse, keyset tamper detection, v1 compatibility, expiry and fee rounding. Desktop GUI smoke test passed, including replay, pause, restart, denomination selection and view-mode switching. Public test-mint keyset snapshot fetched November 27, 2026; the active sat v2 ID matched its data. No real money was used.
 
 ## Protocol references
 

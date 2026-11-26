@@ -5,6 +5,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import json, time
 from engine import *
+from visuals import Replay, Inventory
 BG="#10151d"; PANEL="#192330"; FG="#eef4f7"; MUTED="#a1b1c2"; GREEN="#8ae7b0"; AMBER="#ffc56a"
 PRESETS={"Festival":(2400,[120,75,230,95,400,65,180,50,200,125]),
          "Emergency supplies":(5000,[350,1200,550,240,700,85,125,450]),
@@ -17,6 +18,9 @@ class App(tk.Tk):
         self.protocol("WM_DELETE_WINDOW",self.close)
         style=ttk.Style(self); style.theme_use("clam")
         style.configure("TCombobox",fieldbackground=PANEL,background=PANEL,foreground=FG,arrowcolor=FG)
+        style.map("TCombobox",fieldbackground=[("readonly",BG)],foreground=[("readonly",FG)],selectbackground=[("readonly",BG)],selectforeground=[("readonly",FG)])
+        self.option_add("*TCombobox*Listbox.background",PANEL)
+        self.option_add("*TCombobox*Listbox.foreground",FG)
         style.configure("Treeview",background=PANEL,fieldbackground=PANEL,foreground=FG,rowheight=25,borderwidth=0)
         style.configure("Treeview.Heading",background="#253546",foreground=FG)
         style.map("Treeview",background=[("selected","#31506a")])
@@ -45,11 +49,15 @@ class App(tk.Tk):
         self.label(right,"03  /  SURVIVAL DASHBOARD",GREEN,13,True)
         self.canvas=tk.Canvas(right,bg=PANEL,height=156,highlightthickness=0);self.canvas.pack(fill="x")
         self.canvas.bind("<Configure>",lambda _:self.draw())
-        self.table=ttk.Treeview(right,columns=("denom","compact","ready"),show="headings",height=8)
+        tableframe=tk.Frame(right,bg=PANEL);tableframe.pack(fill="both",expand=True,pady=(4,8))
+        self.table=ttk.Treeview(tableframe,columns=("denom","compact","ready"),show="headings",height=8)
         for k,title in [("denom","Denomination"),("compact","Compact proofs"),("ready","Prepared proofs")]:
             self.table.heading(k,text=title); self.table.column(k,width=110,anchor="center")
-        self.table.pack(fill="both",expand=True,pady=(4,8))
+        sb=ttk.Scrollbar(tableframe,orient="vertical",command=self.table.yview);self.table.configure(yscrollcommand=sb.set);sb.pack(side="right",fill="y");self.table.pack(side="left",fill="both",expand=True)
         self.summary=tk.Label(right,text="Run a scenario to compare compact and prepared inventories.",bg=PANEL,fg=FG,justify="left",wraplength=490);self.summary.pack(anchor="w",pady=4)
+        actions=tk.Frame(right,bg=PANEL);actions.pack(fill="x",pady=3)
+        for title,cmd in [("PLAY BLACKOUT",self.replay),("DENOMINATION LAB",self.inventory)]:
+            tk.Button(actions,text=title,command=cmd,bg="#273749",fg=FG,font=("Sans",10,"bold"),pady=6,relief="flat").pack(side="left",fill="x",expand=True,padx=2)
         self.btn(right,"Export plan (JSON, no wallet secrets)",self.export)
         tk.Label(self,text="PLANNER ONLY  •  Offline receipt does not prevent double-spending. Mint trust, fees, expiry and recipient redemption still matter.",fg=MUTED,bg=BG,font=("Sans",9),wraplength=1000).pack(padx=16,pady=(0,8))
         self.load_preset();self.show_key();self.after(150,self.run)
@@ -116,6 +124,10 @@ class App(tk.Tk):
           f"Proof count: {sum(r['compact'].values())} → {sum(r['ready'].values())}   |   {r['trials']} seeded stress scenarios\n"
           f"Prepared recipient redemption fee estimate: {p['recipient_fee_estimate']} sats (one swap per payment).\n"
           "Stress: pooled inventory, shuffled amounts ±20%; no mint contact.")
+    def replay(self):
+        if self.result is not None: return Replay(self,self.result,self.context)
+    def inventory(self):
+        if self.result is not None: return Inventory(self,self.result)
     def export(self):
         if not self.result:return messagebox.showinfo("No plan","Run a scenario first.")
         path=filedialog.asksaveasfilename(defaultextension=".json",initialfile="nutrelay-plan.json")
